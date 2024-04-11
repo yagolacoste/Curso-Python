@@ -77,3 +77,14 @@ def deleted_posts(id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"post with id:{id} not found")
     my_posts.pop(index)  ##remueve el valor en el indice
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.put("/posts/{id}")
+def deleted_posts(id: int,post: Post):
+    index = find_index(id)
+    if index == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"post with id:{id} not found")
+    post_dict = post.dict()
+    post_dict['id'] = id
+    my_posts[index] = post_dict
+    return {"post_detail": post}
