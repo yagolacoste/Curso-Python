@@ -62,25 +62,35 @@ def root():
 
 @app.get("/sqlalchemy")
 def test_post(db: Session = Depends(get_db)):
-    return {"status": "success"}
+    posts = db.query(models.Post).all()
+    return {"status": posts}
 
 
 @app.get("/posts")
-def get_posts():
-    posts = cursor.execute("SELECT * FROM posts")
-    posts = cursor.fetchall()
-    print(posts)
-    return {"data": posts}
+def get_posts(db: Session = Depends(get_db)):
+    ##Dejo evidencia de que uso execute con sql
+    # posts = cursor.execute("SELECT * FROM posts")
+    # posts = cursor.fetchall()
+    # print(posts)
+    # return {"data": posts}
+    posts = db.query(models.Post).all()
+    return {"status": posts}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_posts(post: Post):
-    cursor.execute("""INSERT INTO posts (title,content,published) VALUES (%s,%s,%s)""",
-                   (post.title, post.content, post.published))
-    cursor.execute("SELECT * FROM posts WHERE id = LAST_INSERT_ID();")
-    new_post = cursor.fetchone()
-    conn.commit()
-    return {"data": new_post}
+def create_posts(post: Post, db: Session = Depends(get_db)):
+    new_post = models.Post(
+        **post.dict())  ## esto hace que el post que recibimos lo convierta en un diccionario y que a su vez lo ponga en el mismo formato que se requiere
+    db.add(new_post)
+    db.commit()
+    db.refresh()
+    return {"f"}
+    # cursor.execute("""INSERT INTO posts (title,content,published) VALUES (%s,%s,%s)""",
+    #                (post.title, post.content, post.published))
+    # cursor.execute("SELECT * FROM posts WHERE id = LAST_INSERT_ID();")
+    # new_post = cursor.fetchone()
+    # conn.commit()
+    # return {"data": new_post}
 
 
 ##En este ejemplo cambio de posicion la funcion porque pasaba que cuando leia /post/ pensaba que era el path
